@@ -95,4 +95,22 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/deleteFirstImageWithPermissionButton" />
+
+    <Button
+        android:id="@+id/safOpenDocumentButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="ACTION_OPEN_DOCUMENT"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/writeFileToSDCardButton" />
+
+    <Button
+        android:id="@+id/safCreateDocumentButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="ACTION_CREATE_DOCUMENT"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/safOpenDocumentButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>

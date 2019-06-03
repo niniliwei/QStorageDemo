@@ -1,10 +1,12 @@
 package com.niniliwei.qstoragedemo
 
 import android.Manifest
+import android.app.Activity
 import android.app.PendingIntent
 import android.app.RecoverableSecurityException
 import android.content.ContentUris
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Environment
@@ -28,6 +30,8 @@ class MainActivity : AppCompatActivity() {
         private const val REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_FOR_DELETING_FIRST_IMAGE = 2
         private const val REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_FOR_WRITING_TO_SDCARD = 3
         private const val REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_FOR_DOWNLOADS = 4
+        private const val REQUEST_CODE_OPEN_DOCUMENT = 5
+        private const val REQUEST_CODE_CREATE_DOCUMENT = 6
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -165,6 +169,49 @@ class MainActivity : AppCompatActivity() {
                 )
             } else {
                 writeFileToSDCard()
+            }
+        }
+        safOpenDocumentButton.setOnClickListener {
+            Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                // 指定文件类型
+                type = "text/plain"
+                startActivityForResult(this, REQUEST_CODE_OPEN_DOCUMENT)
+            }
+        }
+        safCreateDocumentButton.setOnClickListener {
+            Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                // 指定文件类型
+                type = "text/plain"
+                // 指定文件名称
+                putExtra(Intent.EXTRA_TITLE, "hello.txt")
+                startActivityForResult(this, REQUEST_CODE_CREATE_DOCUMENT)
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode != Activity.RESULT_OK) return
+        if (requestCode == REQUEST_CODE_OPEN_DOCUMENT) {
+            data?.data?.let {
+                Log.i(TAG, "open document: $it")
+                // contentResolver.openInputStream(it)
+                // contentResolver.openFileDescriptor(it, "r")
+            }
+        } else if (requestCode == REQUEST_CODE_CREATE_DOCUMENT) {
+            data?.data?.let {
+                try {
+                    contentResolver.openOutputStream(it)?.use { outputStream ->
+                        outputStream.write("Hello World!".toByteArray())
+                    }
+
+                    Toast.makeText(this, "操作成功", Toast.LENGTH_SHORT).show()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    Toast.makeText(this, "操作失败", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
