@@ -60,4 +60,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/deleteFirstImageWithoutPermissionButton" />
 
+    <Button
+        android:id="@+id/writeFileToSDCardButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="往SD卡中直接写入文件"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/deleteFirstImageWithPermissionButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>

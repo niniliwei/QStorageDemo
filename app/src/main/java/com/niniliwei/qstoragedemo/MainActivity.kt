@@ -7,6 +7,7 @@ import android.content.ContentUris
 import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
@@ -15,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.os.BuildCompat
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
@@ -22,7 +25,8 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "QStorageDemo"
         private const val REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 1
-        private const val REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE = 2
+        private const val REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_FOR_DELETING_FIRST_IMAGE = 2
+        private const val REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_FOR_WRITING_TO_SDCARD = 3
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,11 +102,44 @@ class MainActivity : AppCompatActivity() {
                 ActivityCompat.requestPermissions(
                         this,
                         arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                        REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE
+                        REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_FOR_DELETING_FIRST_IMAGE
                 )
             } else {
                 deleteFirstImage()
             }
+        }
+        writeFileToSDCardButton.setOnClickListener {
+            if (ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                        REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_FOR_WRITING_TO_SDCARD
+                )
+            } else {
+                writeFileToSDCard()
+            }
+        }
+    }
+
+    private fun writeFileToSDCard() {
+        val dir = Environment.getExternalStoragePublicDirectory("MyPictures")
+        if (!dir.exists()) dir.mkdirs()
+
+        val file = File(dir, "IMG1024.JPG")
+        try {
+            resources.assets.open("tim-meyer.jpg").use { inputStream ->
+                FileOutputStream(file).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+
+            Toast.makeText(this, "操作成功", Toast.LENGTH_SHORT).show()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Toast.makeText(this, "操作失败", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -142,8 +179,10 @@ class MainActivity : AppCompatActivity() {
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             if (requestCode == REQUEST_PERMISSION_READ_EXTERNAL_STORAGE) {
                 readAllImages()
-            } else if (requestCode == REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE) {
+            } else if (requestCode == REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_FOR_DELETING_FIRST_IMAGE) {
                 deleteFirstImage()
+            } else if (requestCode == REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_FOR_WRITING_TO_SDCARD) {
+                writeFileToSDCard()
             }
         } else {
             Log.i(TAG, "PERMISSION REQUEST DENIED!!!")
