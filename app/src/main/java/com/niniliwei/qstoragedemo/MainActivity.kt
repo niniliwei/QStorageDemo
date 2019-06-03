@@ -1,21 +1,26 @@
 package com.niniliwei.qstoragedemo
 
-import android.app.RecoverableSecurityException
+import android.Manifest
+import android.content.ContentUris
 import android.content.ContentValues
-import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.os.BuildCompat
 import kotlinx.android.synthetic.main.activity_main.*
-import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        private const val TAG = "QStorageDemo"
+        private const val REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 1
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +65,52 @@ class MainActivity : AppCompatActivity() {
                             insertMp3File(volumeNames[which])
                         }
                         .show()
+            }
+        }
+        readImagesWithoutPermissionButton.setOnClickListener {
+            readAllImages()
+        }
+        readImagesWithPermissionButton.setOnClickListener {
+            if (ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                    ) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                        REQUEST_PERMISSION_READ_EXTERNAL_STORAGE
+                )
+            } else {
+                readAllImages()
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (requestCode == REQUEST_PERMISSION_READ_EXTERNAL_STORAGE) {
+                readAllImages()
+            }
+        } else {
+            Log.i(TAG, "PERMISSION REQUEST DENIED!!!")
+        }
+    }
+
+    private fun readAllImages() {
+        val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        val cursor = contentResolver.query(collection, null, null, null, null) ?: return
+
+        cursor.use {
+            Log.i(TAG, "images cursor size: ${cursor.count}")
+            while (cursor.moveToNext()) {
+                val imageUri = ContentUris.withAppendedId(
+                        collection,
+                        cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
+                )
+                val displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME))
+                val mimeType = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.MIME_TYPE))
+                Log.i(TAG, "imageUri: $imageUri(displayName: $displayName, mimeType:$mimeType)")
             }
         }
     }
