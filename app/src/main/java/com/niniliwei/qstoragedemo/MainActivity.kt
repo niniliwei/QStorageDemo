@@ -21,6 +21,34 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        contributingFilesButton.setOnClickListener {
+            val values = ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, "IMG1024.JPG")
+                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            }
+
+            val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            val item = contentResolver.insert(collection, values) ?: return@setOnClickListener
+
+            try {
+                contentResolver.openOutputStream(item)?.use { outputStream ->
+                    resources.assets.open("tim-meyer.jpg").use { inputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+                }
+
+                values.clear()
+                values.put(MediaStore.Audio.Media.IS_PENDING, 0)
+                contentResolver.update(item, values, null, null)
+
+                Toast.makeText(this, "操作成功", Toast.LENGTH_SHORT).show()
+            } catch (e: IOException) {
+                e.printStackTrace()
+                Toast.makeText(this, "操作失败", Toast.LENGTH_SHORT).show()
+            }
+
+        }
         customRelativePathAndVolumeButton.setOnClickListener {
             if (BuildCompat.isAtLeastQ()) {
                 val volumeNames = MediaStore.getAllVolumeNames(this)
@@ -59,10 +87,10 @@ class MainActivity : AppCompatActivity() {
             values.put(MediaStore.Audio.Media.IS_PENDING, 0)
             contentResolver.update(item, values, null, null)
 
-            Toast.makeText(this, "导入成功", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "操作成功", Toast.LENGTH_SHORT).show()
         } catch (e: IOException) {
             e.printStackTrace()
-            Toast.makeText(this, "导入失败", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "操作失败", Toast.LENGTH_SHORT).show()
         }
     }
 }

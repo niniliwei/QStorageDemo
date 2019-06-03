@@ -7,12 +7,21 @@
     tools:context=".MainActivity">
 
     <Button
+        android:id="@+id/contributingFilesButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="向 MediaStore 中贡献文件"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
         android:id="@+id/customRelativePathAndVolumeButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="指定相对路径和共享存储卷名"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/contributingFilesButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
