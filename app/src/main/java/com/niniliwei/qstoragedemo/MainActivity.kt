@@ -99,6 +99,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun readAllImages() {
         val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        // val collectionWithPending = MediaStore.setIncludePending(collection)
         val cursor = contentResolver.query(collection, null, null, null, null) ?: return
 
         cursor.use {
