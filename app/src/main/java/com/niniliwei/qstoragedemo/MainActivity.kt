@@ -1,6 +1,8 @@
 package com.niniliwei.qstoragedemo
 
 import android.Manifest
+import android.app.PendingIntent
+import android.app.RecoverableSecurityException
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.pm.PackageManager
@@ -20,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "QStorageDemo"
         private const val REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 1
+        private const val REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE = 2
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,6 +87,54 @@ class MainActivity : AppCompatActivity() {
                 readAllImages()
             }
         }
+        deleteFirstImageWithoutPermissionButton.setOnClickListener {
+            deleteFirstImage()
+        }
+        deleteFirstImageWithPermissionButton.setOnClickListener {
+            if (ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                        REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE
+                )
+            } else {
+                deleteFirstImage()
+            }
+        }
+    }
+
+    private fun deleteFirstImage() {
+        val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        val cursor = contentResolver.query(collection, null, null, null, null)
+                ?: return
+
+        cursor.use {
+            if (cursor.moveToFirst()) {
+                val imageUri = ContentUris.withAppendedId(
+                        collection,
+                        cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
+                )
+
+                try {
+                    val result = contentResolver.delete(imageUri, null, null)
+                    Log.i(TAG, "delete result: $result")
+                } catch (e: RecoverableSecurityException) {
+                    AlertDialog.Builder(this)
+                            .setMessage(e.userMessage)
+                            .setPositiveButton(e.userAction.title) { dialog, which ->
+                                try {
+                                    e.userAction.actionIntent.send()
+                                } catch (ignored: PendingIntent.CanceledException) {
+                                }
+                            }
+                            .setNegativeButton(android.R.string.cancel, null)
+                            .show()
+                }
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -91,6 +142,8 @@ class MainActivity : AppCompatActivity() {
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             if (requestCode == REQUEST_PERMISSION_READ_EXTERNAL_STORAGE) {
                 readAllImages()
+            } else if (requestCode == REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE) {
+                deleteFirstImage()
             }
         } else {
             Log.i(TAG, "PERMISSION REQUEST DENIED!!!")

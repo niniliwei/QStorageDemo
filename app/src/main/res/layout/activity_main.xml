@@ -42,4 +42,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/readImagesWithoutPermissionButton" />
 
+    <Button
+        android:id="@+id/deleteFirstImageWithoutPermissionButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="不请求权限删除第一张图片"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/readImagesWithPermissionButton" />
+
+    <Button
+        android:id="@+id/deleteFirstImageWithPermissionButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="请求权限删除第一张图片"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/deleteFirstImageWithoutPermissionButton" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
