@@ -24,9 +24,10 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "QStorageDemo"
-        private const val REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 1
+        private const val REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_FOR_IMAGES = 1
         private const val REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_FOR_DELETING_FIRST_IMAGE = 2
         private const val REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_FOR_WRITING_TO_SDCARD = 3
+        private const val REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_FOR_DOWNLOADS = 4
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,10 +86,54 @@ class MainActivity : AppCompatActivity() {
                 ActivityCompat.requestPermissions(
                         this,
                         arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                        REQUEST_PERMISSION_READ_EXTERNAL_STORAGE
+                        REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_FOR_IMAGES
                 )
             } else {
                 readAllImages()
+            }
+        }
+        writeFileToMediaDownloadsButton.setOnClickListener {
+            val values = ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, "IMG1024_Downloads.JPG")
+                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            }
+
+            val collection = MediaStore.Downloads.EXTERNAL_CONTENT_URI
+            val item = contentResolver.insert(collection, values) ?: return@setOnClickListener
+
+            try {
+                contentResolver.openOutputStream(item)?.use { outputStream ->
+                    resources.assets.open("tim-meyer.jpg").use { inputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+                }
+
+                values.clear()
+                values.put(MediaStore.Audio.Media.IS_PENDING, 0)
+                contentResolver.update(item, values, null, null)
+
+                Toast.makeText(this, "操作成功", Toast.LENGTH_SHORT).show()
+            } catch (e: IOException) {
+                e.printStackTrace()
+                Toast.makeText(this, "操作失败", Toast.LENGTH_SHORT).show()
+            }
+        }
+        readDownloadsWithoutPermissionButton.setOnClickListener {
+            readDownloadsFiles()
+        }
+        readDownloadsWithPermissionButton.setOnClickListener {
+            if (ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                    ) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                        REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_FOR_DOWNLOADS
+                )
+            } else {
+                readDownloadsFiles()
             }
         }
         deleteFirstImageWithoutPermissionButton.setOnClickListener {
@@ -120,6 +165,24 @@ class MainActivity : AppCompatActivity() {
                 )
             } else {
                 writeFileToSDCard()
+            }
+        }
+    }
+
+    private fun readDownloadsFiles() {
+        val collection = MediaStore.Downloads.EXTERNAL_CONTENT_URI
+        val cursor = contentResolver.query(collection, null, null, null, null) ?: return
+
+        cursor.use {
+            Log.i(TAG, "downloads cursor size: ${cursor.count}")
+            while (cursor.moveToNext()) {
+                val item = ContentUris.withAppendedId(
+                        collection,
+                        cursor.getLong(cursor.getColumnIndex(MediaStore.Downloads._ID))
+                )
+                val displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME))
+                val mimeType = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.MIME_TYPE))
+                Log.i(TAG, "downloads item: $item(displayName: $displayName, mimeType:$mimeType)")
             }
         }
     }
@@ -177,7 +240,7 @@ class MainActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            if (requestCode == REQUEST_PERMISSION_READ_EXTERNAL_STORAGE) {
+            if (requestCode == REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_FOR_IMAGES) {
                 readAllImages()
             } else if (requestCode == REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_FOR_DELETING_FIRST_IMAGE) {
                 deleteFirstImage()

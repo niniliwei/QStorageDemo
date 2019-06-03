@@ -10,7 +10,7 @@
         android:id="@+id/contributingFilesButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="向 MediaStore 中贡献文件"
+        android:text="向 MediaStore.Images 中创建文件"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -43,13 +43,40 @@
         app:layout_constraintTop_toBottomOf="@id/readImagesWithoutPermissionButton" />
 
     <Button
+        android:id="@+id/writeFileToMediaDownloadsButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="向 MediaStore.Downloads 中创建文件"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/readImagesWithPermissionButton" />
+
+    <Button
+        android:id="@+id/readDownloadsWithoutPermissionButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="不请求权限读取 MediaStore.Downloads 下所有文件"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/writeFileToMediaDownloadsButton" />
+
+    <Button
+        android:id="@+id/readDownloadsWithPermissionButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="请求权限读取 MediaStore.Downloads 下所有文件"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/readDownloadsWithoutPermissionButton" />
+
+    <Button
         android:id="@+id/deleteFirstImageWithoutPermissionButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="不请求权限删除第一张图片"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/readImagesWithPermissionButton" />
+        app:layout_constraintTop_toBottomOf="@id/readDownloadsWithPermissionButton" />
 
     <Button
         android:id="@+id/deleteFirstImageWithPermissionButton"
